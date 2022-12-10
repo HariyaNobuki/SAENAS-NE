@@ -36,7 +36,7 @@ def sample_arch():
     return (normal), (normal_name)
 
 
-def build_mat_encoding(normal, normal_name, counter):
+def build_mat_encoding(normal, normal_name, counter=None, return_encode=False):
     adj = torch.zeros(11, 11)
     ops = torch.zeros(11, 11)
     block_0 = (normal[0], normal[1])
@@ -142,19 +142,22 @@ def build_mat_encoding(normal, normal_name, counter):
 
     label = torch.argmax(ops, dim=1)
 
-    fingerprint = graph_util.hash_module(adj.int().numpy(), label.int().numpy().tolist())
-    if fingerprint not in buckets:
-        normal_cell = [(item[1], int(item[0])) for item in normal_name]
-        reduce_cell = normal_cell.copy()
-        genotype = Genotype(normal=normal_cell, normal_concat=[2, 3, 4, 5], reduce=reduce_cell, reduce_concat=[2, 3, 4, 5])
-        model = Network(48, 1000, 14, False, genotype).cuda()
-        input = torch.randn(1, 3, 224, 224).cuda()
-        macs, params = profile(model, inputs=(input, ))
-        if macs < 6e8:
-            counter += 1
-            print("counter: {}, flops: {}, params: {}".format(counter, macs, params))
-            buckets[fingerprint] = (adj.numpy().astype('int8').tolist(), label.numpy().astype('int8').tolist(), (normal_name))
+    # fingerprint = graph_util.hash_module(adj.int().numpy(), label.int().numpy().tolist())
+    # if fingerprint not in buckets:
+    #     normal_cell = [(item[1], int(item[0])) for item in normal_name]
+    #     reduce_cell = normal_cell.copy()
+    #     genotype = Genotype(normal=normal_cell, normal_concat=[2, 3, 4, 5], reduce=reduce_cell, reduce_concat=[2, 3, 4, 5])
+    #     model = Network(48, 1000, 14, False, genotype).cuda()
+    #     input = torch.randn(1, 3, 224, 224).cuda()
+    #     macs, params = profile(model, inputs=(input, ))
+    #     if macs < 6e8:
+    #         counter += 1
+    #         print("counter: {}, flops: {}, params: {}".format(counter, macs, params))
+    #         buckets[fingerprint] = (adj.numpy().astype('int8').tolist(), label.numpy().astype('int8').tolist(), (normal_name))
 
+    if return_encode:
+        return (adj.numpy().astype('int8').tolist(), label.numpy().astype('int8').tolist())
+    counter+=1
     if counter > 0 and counter % 1e5 == 0:
         with open('data/data_darts_counter{}.json'.format(counter), 'w') as f:
             json.dump(buckets, f)
@@ -162,7 +165,7 @@ def build_mat_encoding(normal, normal_name, counter):
     return counter
 
 if __name__ == '__main__':
-    from nasbench.lib import graph_util
+    # import graph_util
     OPS = ['none',
            'max_pool_3x3',
            'avg_pool_3x3',

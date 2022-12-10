@@ -16,12 +16,19 @@ import torch.backends.cudnn as cudnn
 from collections import namedtuple
 
 from darts.cnn.model import NetworkCIFAR as Network
+import argparse
+import json
+
+def process(geno):
+  for i, item in enumerate(geno):
+    geno[i] = tuple(geno[i])
+  return geno
 
 class Train:
 
-  def __init__(self):
+  def __init__(self,data_path):
 
-    self.data='./data'
+    self.data=data_path
     self.batch_size= 96
     self.learning_rate= 0.025
     self.momentum= 0.9
@@ -44,21 +51,21 @@ class Train:
     self.validation_set = True
     self.CIFAR_CLASSES = 10
 
-  def main(self, counter, seed, arch, epochs=50, gpu=0, load_weights=False, train_portion=0.9, save='model_search'):
+  def main(self, seed, arch, epochs=50, gpu=0, load_weights=False, train_portion=0.9):
 
     # Set up save file and logging
-    self.save = save
-    self.save = '{}'.format(self.save)
-    utils.create_exp_dir(self.save, scripts_to_save=glob.glob('*.py'))
-    log_format = '%(asctime)s %(message)s'
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
-        format=log_format, datefmt='%m/%d %I:%M:%S %p')
-    fh = logging.FileHandler(os.path.join(self.save, 'log-seed{}.txt'.format(seed)))
-    fh.setFormatter(logging.Formatter(log_format))
-    logging.getLogger().addHandler(fh)
+    # self.save = save
+    # self.save = '{}'.format(self.save)
+    # utils.create_exp_dir(self.save, scripts_to_save=glob.glob('*.py'))
+    # log_format = '%(asctime)s %(message)s'
+    # logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+    #     format=log_format, datefmt='%m/%d %I:%M:%S %p')
+    # fh = logging.FileHandler(os.path.join(self.save, 'log-seed{}.txt'.format(seed)))
+    # fh.setFormatter(logging.Formatter(log_format))
+    # logging.getLogger().addHandler(fh)
 
 
-    self.arch = arch
+    self.arch = process(arch)
     self.epochs = epochs
     self.load_weights = load_weights
     self.gpu = gpu
@@ -109,7 +116,7 @@ class Train:
 
     train_transform, test_transform = utils._data_transforms_cifar10(self.cutout, self.cutout_length)
     train_data = dset.CIFAR10(root=self.data, train=True, download=True, transform=train_transform)
-    test_data = dset.CIFAR10(root=self.data, train=False, download=True, transform=test_transform)
+    # test_data = dset.CIFAR10(root=self.data, train=False, download=True, transform=test_transform)
 
     num_train = len(train_data)
     indices = list(range(num_train))
@@ -155,29 +162,29 @@ class Train:
       else:
         valid_acc, valid_obj = 0, 0
 
-      test_acc, test_obj = self.infer(test_queue, model, criterion, test_data=True)
-      logging.info('train_acc: {:.4f}, valid_acc: {:.4f}, test_acc: {:.4f}'.format(train_acc, valid_acc, test_acc))
-      print('train_acc: {:.4f}, valid_acc: {:.4f}, test_acc: {:.4f}'.format(train_acc, valid_acc, test_acc))
+      # test_acc, test_obj = self.infer(test_queue, model, criterion, test_data=True)
+      # logging.info('train_acc: {:.4f}, valid_acc: {:.4f}, test_acc: {:.4f}'.format(train_acc, valid_acc, test_acc))
+      # print('train_acc: {:.4f}, valid_acc: {:.4f}, test_acc: {:.4f}'.format(train_acc, valid_acc, test_acc))
 
       #utils.save(model, os.path.join(self.save, 'weights-seed-{}.pt'.format(seed)))
 
       if epoch in list(range(max(0, epochs - 5), epochs)):
         valid_accs.append((epoch, valid_acc))
-        test_accs.append((epoch, test_acc))
+        # test_accs.append((epoch, test_acc))
 
       scheduler.step()
 
-    return valid_accs, test_accs
+    return np.mean(valid_accs)
 
 
-  def convert_to_genotype(self, counter, arch):
+  def convert_to_genotype(self, arch):
     Genotype = namedtuple('Genotype', 'normal normal_concat reduce reduce_concat')
     geno = []
     for item in arch:
       geno.append((item[1], int(item[0])))
     geno = Genotype(normal=geno, normal_concat=[2,3,4,5], reduce=geno, reduce_concat=[2,3,4,5])
-    logging.info('counter: {}, genotypes: {}'.format(counter, str(geno)))
-    print('counter: {}, genotypes: {}'.format(counter, str(geno)))
+    logging.info(' genotypes: {}'.format( str(geno)))
+    print(' genotypes: {}'.format( str(geno)))
     return str(geno)
 
 
@@ -242,5 +249,24 @@ class Train:
       #    logging.info('test %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
 
     return top1.avg, objs.avg
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--data-path',type=str,required=True)
+  parser.add_argument('--save-path',type=str,required=True)
+  parser.add_argument('--net',type=str,required=True)
+  parser.add_argument('--seed',type=int,default=0)
+  parser.add_argument('--epochs',type=int,default=50)
+  parser.add_argument('--gpu',type=int,default=0)
+  parser.add_argument('--train_portion',type=float,default=0.9)
+  args = parser.parse_args()
+  trainer = Train(args.data_path)
+  with open(args.net,'r') as fp:
+    arch = json.load(fp)
+  val = trainer.main(args.seed,arch,args.epochs,args.gpu,train_portion=args.train_portion)
+
+  with open(args.save_path,'w') as fp:
+    json.dump({'top1':val},fp)
+
 
 

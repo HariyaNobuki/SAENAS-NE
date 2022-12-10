@@ -14,6 +14,8 @@ import torch.nn as nn
 import torch.utils.data as data
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
+from typing import OrderedDict
+import json
 
 B=5
 
@@ -668,3 +670,38 @@ def to_oneshot(array,len_feature=16):
         matrix[i,int(j)]=1
     return matrix
 
+def bash_comm_template(**kwargs):
+    gpu = kwargs.pop('gpu')
+    cfg = OrderedDict()
+    cfg['data-path'] = kwargs['data_path']
+    cfg['save-path'] = kwargs['save_path']
+    cfg['net'] = kwargs['net']
+
+    execution_line = "CUDA_VISIBLE_DEVICES={} python darts/cnn/train_search.py".format(gpu)
+    for k,v in cfg.items():
+        if v is not None:
+            if isinstance(v,bool):
+                if v:
+                    execution_line += "  --{}".format(k)
+            else:
+                execution_line += " --{} {}".format(k,v)
+    execution_line += ' &'
+    return execution_line
+
+def prepare_eval_folder(path, configs, n_gpus=8, **kwargs):
+    os.makedirs(path,exist_ok=True)
+    gpus = list(map(str,range(n_gpus)))
+    data_path = kwargs.pop('data_path','./data/cifar-10')
+    bash_file = ['#!/bin/bash']
+    for i in range(0, len(configs), n_gpus):
+        for j in range(n_gpus):
+            if i+j<len(configs):
+                job = os.path.join(path,"new_{}.subnet".format(i+j))
+                with open(job,'w') as handle:
+                    json.dump(configs[i+j],handle)
+                bash_file.append(
+                    bash_comm_template(gpu=gpus[j], net=job, data_path=data_path,save_path=os.path.join(path, "net_{}.stas".format(i+j)),**kwargs))
+        bash_file.append('wait')
+    with open(os.path.join(path,'run_bash.sh'),'w') as handle:
+        for line in bash_file:
+            handle.write(line+os.linesep)

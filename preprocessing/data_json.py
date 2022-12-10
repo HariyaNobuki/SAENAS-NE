@@ -5,6 +5,9 @@ import numpy as np
 from numpy.matrixlib.defmatrix import matrix
 import pandas as pd
 from numpy.core.fromnumeric import argsort
+import os
+import sys
+sys.path.insert(0, os.getcwd())
 from nasspace import Nasbench301
 from encoder.graph2vec import graph2vec
 
@@ -31,7 +34,7 @@ def load_graph():
         print("{}-th arch has been writen".format(k))
 
 if __name__ == "__main__":
-    # load_graph()
+    load_graph()
     parser = argparse.ArgumentParser(description="Run Graph2Vec.")
     parser.add_argument("--input-path",
                         nargs="?",

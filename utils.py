@@ -8,14 +8,16 @@ import gc
 import zipfile
 from io import BytesIO
 from PIL import Image
-from numpy.core.arrayprint import array_repr
 import torch
 import torch.nn as nn
 import torch.utils.data as data
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
-from typing import OrderedDict
+
 import json
+import hashlib
+import networkx as nx
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 B=5
 
@@ -670,38 +672,79 @@ def to_oneshot(array,len_feature=16):
         matrix[i,int(j)]=1
     return matrix
 
-def bash_comm_template(**kwargs):
-    gpu = kwargs.pop('gpu')
-    cfg = OrderedDict()
-    cfg['data-path'] = kwargs['data_path']
-    cfg['save-path'] = kwargs['save_path']
-    cfg['net'] = kwargs['net']
+class WeisfeilerLehmanMachine:
+    """
+    Weisfeiler Lehman feature extractor class.
+    """
+    def __init__(self, graph, features, iterations):
+        """
+        Initialization method which also executes feature extraction.
+        :param graph: The Nx graph object.
+        :param features: Feature hash table.
+        :param iterations: Number of WL iterations.
+        """
+        self.iterations = iterations
+        self.graph = graph
+        self.features = features
+        self.nodes = self.graph.nodes()
+        self.extracted_features = [str(v) for k, v in features.items()]
+        self.do_recursions()
 
-    execution_line = "CUDA_VISIBLE_DEVICES={} python darts/cnn/train_search.py".format(gpu)
-    for k,v in cfg.items():
-        if v is not None:
-            if isinstance(v,bool):
-                if v:
-                    execution_line += "  --{}".format(k)
-            else:
-                execution_line += " --{} {}".format(k,v)
-    execution_line += ' &'
-    return execution_line
+    def do_a_recursion(self):
+        """
+        The method does a single WL recursion.
+        :return new_features: The hash table with extracted WL features.
+        """
+        new_features = {}
+        for node in self.nodes:
+            nebs = self.graph.neighbors(node)
+            degs = [self.features[neb] for neb in nebs]
+            features = [str(self.features[node])]+sorted([str(deg) for deg in degs])
+            features = "_".join(features)
+            hash_object = hashlib.md5(features.encode())
+            hashing = hash_object.hexdigest()
+            new_features[node] = hashing
+        self.extracted_features = self.extracted_features + list(new_features.values())
+        return new_features
 
-def prepare_eval_folder(path, configs, n_gpus=8, **kwargs):
-    os.makedirs(path,exist_ok=True)
-    gpus = list(map(str,range(n_gpus)))
-    data_path = kwargs.pop('data_path','./data/cifar-10')
-    bash_file = ['#!/bin/bash']
-    for i in range(0, len(configs), n_gpus):
-        for j in range(n_gpus):
-            if i+j<len(configs):
-                job = os.path.join(path,"new_{}.subnet".format(i+j))
-                with open(job,'w') as handle:
-                    json.dump(configs[i+j],handle)
-                bash_file.append(
-                    bash_comm_template(gpu=gpus[j], net=job, data_path=data_path,save_path=os.path.join(path, "net_{}.stas".format(i+j)),**kwargs))
-        bash_file.append('wait')
-    with open(os.path.join(path,'run_bash.sh'),'w') as handle:
-        for line in bash_file:
-            handle.write(line+os.linesep)
+    def do_recursions(self):
+        """
+        The method does a series of WL recursions.
+        """
+        for _ in range(self.iterations):
+            self.features = self.do_a_recursion()
+
+def path2name(path):
+    base = os.path.basename(path)
+    return os.path.splitext(base)[0]
+
+def dataset_reader(path):
+    """
+    Function to read the graph and features from a json file.
+    :param path: The path to the graph json.
+    :return graph: The graph object.
+    :return features: Features hash table.
+    :return name: Name of the graph.
+    """
+    name = path2name(path)
+    data = json.load(open(path))
+    graph = nx.from_edgelist(data["edges"])
+
+    if "features" in data.keys():
+        features = data["features"]
+    else:
+        features = nx.degree(graph)
+
+    features = {int(k): v for k, v in features.items()}
+    return graph, features, name
+
+def featrue_extract_by_graph(graph_dict,name,rounds=2):
+    graph = nx.from_edgelist(graph_dict["edges"])
+    if "features" in graph_dict.keys():
+        features = graph_dict["features"]
+    else:
+        features = nx.degree(graph)
+    features = {int(k): v for k, v in features.items()}
+    machine = WeisfeilerLehmanMachine(graph, features, rounds)
+    doc = TaggedDocument(words=machine.extracted_features, tags=["g_" + name])
+    return doc

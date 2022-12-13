@@ -17,7 +17,7 @@ def load_graph():
     for uid in range(600000):
         edges = []
         features = {}
-        arch = Nasbench301.get_cell().random_cell(searchspace.nasbench,random_encoding="adj")
+        arch = Nasbench301.get_cell().random_cell(random_encoding="adj")
         matrix,ops = Nasbench301.get_cell(arch).encode(predictor_encoding="gcn")
 
         xs,ys = np.where(matrix==1)
@@ -34,7 +34,7 @@ def load_graph():
         print("{}-th arch has been writen".format(k))
 
 if __name__ == "__main__":
-    load_graph()
+    # load_graph()
     parser = argparse.ArgumentParser(description="Run Graph2Vec.")
     parser.add_argument("--input-path",
                         nargs="?",

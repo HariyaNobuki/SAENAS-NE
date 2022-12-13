@@ -293,11 +293,6 @@ class Nasbench301(Nasbench):
     def __init__(self):
         self.dataset = 'cifar10'
         self.search_space = 'nasbench_301'
-        ensemble_dir_performance = os.path.expanduser('nb_models/xgb_v1.0')
-        performance_model = nb301.load_ensemble(ensemble_dir_performance)
-        ensemble_dir_runtime = os.path.expanduser('nb_models/lgb_runtime_v1.0')
-        runtime_model = nb301.load_ensemble(ensemble_dir_runtime)
-        self.nasbench = [performance_model, runtime_model] 
         self.index_hash = None
 
     def get_type(self):

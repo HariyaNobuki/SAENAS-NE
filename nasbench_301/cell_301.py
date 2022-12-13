@@ -280,7 +280,6 @@ class Cell301:
 
     @classmethod
     def random_cell(cls, 
-                    nasbench, 
                     random_encoding, 
                     cutoff=None,
                     max_edges=10, 

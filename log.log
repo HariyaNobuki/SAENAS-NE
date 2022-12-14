@@ -1,0 +1,9 @@
+2022-12-14 20:51:30,966 - INFO: loading Doc2Vec object from g2v_model/doc2vec_model_dim32.model
+2022-12-14 20:51:31,180 - INFO: loading dv recursively from g2v_model/doc2vec_model_dim32.model.dv.* with mmap=None
+2022-12-14 20:51:31,180 - INFO: loading vectors from g2v_model/doc2vec_model_dim32.model.dv.vectors.npy with mmap=None
+2022-12-14 20:51:31,196 - INFO: loading wv recursively from g2v_model/doc2vec_model_dim32.model.wv.* with mmap=None
+2022-12-14 20:51:31,196 - INFO: loading vectors from g2v_model/doc2vec_model_dim32.model.wv.vectors.npy with mmap=None
+2022-12-14 20:51:31,211 - INFO: loading syn1neg from g2v_model/doc2vec_model_dim32.model.syn1neg.npy with mmap=None
+2022-12-14 20:51:31,237 - INFO: setting ignored attribute cum_table to None
+2022-12-14 20:51:33,776 - INFO: Doc2Vec lifecycle event {'fname': 'g2v_model/doc2vec_model_dim32.model', 'datetime': '2022-12-14T20:51:33.776734', 'gensim': '4.1.1', 'python': '3.7.10 (default, Feb 26 2021, 13:06:18) [MSC v.1916 64 bit (AMD64)]', 'platform': 'Windows-10-10.0.22000-SP0', 'event': 'loaded'}
+2022-12-14 20:51:33,776 - INFO: seed:13

@@ -3,14 +3,12 @@ import json
 import os
 import logging
 import argparse
-from utils import archlist2archcode
-from evolution import ENAS, crossover_ind
+from evolution import ENAS
 import numpy as np
 import random
 import torch
 import torch.backends.cudnn as cudnn
 from nasspace import Nasbench301
-from scipy.stats import kendalltau
 from gensim.models.doc2vec import Doc2Vec
 
 
@@ -62,7 +60,7 @@ args = parser.parse_args()
 g2v_model =  Doc2Vec.load("g2v_model/doc2vec_model_dim32.model")
 
 
-seed = np.random.randint()
+seed = np.random.randint(100)
 logging.info("seed:{}".format(seed))
 nasspace = Nasbench301()
 random.seed(seed)

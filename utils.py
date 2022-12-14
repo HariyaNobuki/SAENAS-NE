@@ -18,6 +18,7 @@ import json
 import hashlib
 import networkx as nx
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from collections import OrderedDict
 
 B=5
 
@@ -748,3 +749,41 @@ def featrue_extract_by_graph(graph_dict,name,rounds=2):
     machine = WeisfeilerLehmanMachine(graph, features, rounds)
     doc = TaggedDocument(words=machine.extracted_features, tags=["g_" + name])
     return doc
+
+def bash_command_template(**kwargs):
+    gpus = kwargs.pop('gpus')
+    cfg = OrderedDict()
+    cfg['subnet'] = kwargs['subnet']
+    cfg['save'] = kwargs['save']
+    cfg['net_id'] = kwargs['net_id']
+    execution_line = "CUDA_VISIBLE_DEVICES={} python darts/cnn/evaluation.py".format(gpus)
+    for k, v in cfg.items():
+        if v is not None:
+            if isinstance(v, bool):
+                if v:
+                    execution_line += " --{}".format(k)
+            else:
+                execution_line += " --{} {}".format(k, v)
+    execution_line += ' &'
+    return execution_line
+
+def prepare_eval_folder(path, configs, gpu=1, n_gpus=8, **kwargs):
+    """ create a folder for parallel evaluation of a population of architectures """
+    os.makedirs(path, exist_ok=True)
+    gpu_template = ','.join(['{}'] * gpu)
+    gpus = [gpu_template.format(i, i + 1) for i in range(0, n_gpus, gpu)]
+    bash_file = ['#!/bin/bash']
+    for i in range(0, len(configs), n_gpus//gpu):
+        for j in range(n_gpus//gpu):
+            if i + j < len(configs):
+                job = os.path.join(path, "net_{}.subnet".format(i + j))
+                with open(job, 'w') as handle:
+                    json.dump(configs[i + j], handle)
+                bash_file.append(bash_command_template(
+                    gpus=gpus[j], subnet=job, save=os.path.join(
+                        path, "net_{}.stats".format(i + j)), net_id=i+j,**kwargs))
+        bash_file.append('wait')
+
+    with open(os.path.join(path, 'run_bash.sh'), 'w') as handle:
+        for line in bash_file:
+            handle.write(line + os.linesep)

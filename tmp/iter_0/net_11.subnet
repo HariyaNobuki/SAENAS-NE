@@ -1,0 +1,1 @@
+[["1", "dil_conv_5x5"], ["0", "skip_connect"], ["1", "max_pool_3x3"], ["0", "avg_pool_3x3"], ["1", "sep_conv_5x5"], ["3", "sep_conv_3x3"], ["3", "none"], ["2", "none"]]

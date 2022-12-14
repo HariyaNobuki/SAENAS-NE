@@ -122,7 +122,7 @@ class ENAS(object):
             ind = Individual(X=arch,age=0,F=None,score=None,code=self.encode_g2v(arch))
             self.archive.append(ind)
             self.n_eval+=1
-        self._evaluate(ind)
+        self._evaluate(self.archive)
         for p in self.archive:
             p.score = p.F
         print([p.F for p in self.archive])

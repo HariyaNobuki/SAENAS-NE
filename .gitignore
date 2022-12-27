@@ -2,3 +2,6 @@
 *__init__*
 data/
 g2v_model/*
+*.pt
+*.pth
+*tmp/*

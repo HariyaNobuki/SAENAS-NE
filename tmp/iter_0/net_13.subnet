@@ -1,1 +1,0 @@
-[["0", "max_pool_3x3"], ["1", "sep_conv_3x3"], ["1", "none"], ["2", "dil_conv_3x3"], ["2", "dil_conv_3x3"], ["3", "dil_conv_5x5"], ["3", "dil_conv_3x3"], ["1", "sep_conv_3x3"]]

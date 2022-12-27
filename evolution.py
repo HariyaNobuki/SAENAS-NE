@@ -107,7 +107,7 @@ class ENAS(object):
         self.ranknet=None
         self.gpr = None
         self.exe_path='./tmp'
-        self.n_gpus = 8
+        self.n_gpus = 3
 
         self.trainer=Train(args.data_path)
 
@@ -219,7 +219,7 @@ class ENAS(object):
         num_mutated = 0
         offspring_size = self.pop_size * self.M
         for ind in self.pop:
-            hash_ind = str(ind.x)
+            hash_ind = str(ind.X)
             if hash_ind not in hash_visited:
                 hash_visited[hash_ind]=1
         logging.info("size of hash_visited:{}".format(len(hash_visited)))
@@ -255,6 +255,7 @@ class ENAS(object):
                 offspring.append(Individual(X=arch,age=0))
                 hash_visited[hash_arch]=1
         logging.info("offspring if ready")
+        return offspring
 
     def env_select(self,offspring):
         mixed = Population.merge(self.pop,offspring)
@@ -263,7 +264,7 @@ class ENAS(object):
                 ind.code = self.encode_g2v(ind.X)
         scores = self.predict(mixed)
         for i in range(len(mixed)):
-            mixed.score = scores[i]
+            mixed[i].score = scores[i]
         diss = np.full((self.pop_size,self.pop_size*self.M),np.inf)
         n_update = 0
         for i in range(self.pop_size):
@@ -323,7 +324,7 @@ class ENAS(object):
         num_resample = len(new_candidate)
         self.archive_pop = sorted(self.archive_pop,key=lambda x:x.F,reverse=True)
         n_absolate = self.pop_size -  num_resample
-        diss = np.full((num_resample,num_resample,0.))
+        diss = np.full((num_resample,num_resample),0.)
         for i in range(num_resample):
             for j in range(num_resample):
                 diss[i,j] = cos_dis(self.archive_pop[n_absolate+i].code, new_candidate[j].code)

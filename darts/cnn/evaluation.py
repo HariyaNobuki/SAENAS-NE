@@ -52,10 +52,6 @@ def main():
 
   np.random.seed(args.seed)
   random.seed(args.seed)
-  valid_acc = np.random.randint()
-  with open(os.path.join(args.save,"net_{}".format(args.net_id)),'w') as fp:
-    json.dump(valid_acc,fp)
-  exit(0)
   if torch.cuda.is_available():
     device = torch.device('cuda:{}'.format(args.gpu))
     cudnn.benchmark = False
@@ -72,7 +68,9 @@ def main():
   # logging.info("args = %s", args)
   # genotype = eval("genotypes.%s" % args.arch)
   with open(args.subnet,'r') as fp:
-    genotype = json.load(fp)
+    named_list = json.load(fp)
+  geno = [(a[1],int(a[0])) for a in named_list]
+  genotype = genotypes.Genotype(normal=geno,normal_concat=[2,3,4,5],reduce=geno,reduce_concat=[2,3,4,5])
   model = Network(args.init_channels, CIFAR_CLASSES, args.layers, args.auxiliary, genotype)
   model = model.to(device)
 

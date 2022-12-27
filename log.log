@@ -1,9 +1,9 @@
-2022-12-14 20:51:30,966 - INFO: loading Doc2Vec object from g2v_model/doc2vec_model_dim32.model
-2022-12-14 20:51:31,180 - INFO: loading dv recursively from g2v_model/doc2vec_model_dim32.model.dv.* with mmap=None
-2022-12-14 20:51:31,180 - INFO: loading vectors from g2v_model/doc2vec_model_dim32.model.dv.vectors.npy with mmap=None
-2022-12-14 20:51:31,196 - INFO: loading wv recursively from g2v_model/doc2vec_model_dim32.model.wv.* with mmap=None
-2022-12-14 20:51:31,196 - INFO: loading vectors from g2v_model/doc2vec_model_dim32.model.wv.vectors.npy with mmap=None
-2022-12-14 20:51:31,211 - INFO: loading syn1neg from g2v_model/doc2vec_model_dim32.model.syn1neg.npy with mmap=None
-2022-12-14 20:51:31,237 - INFO: setting ignored attribute cum_table to None
-2022-12-14 20:51:33,776 - INFO: Doc2Vec lifecycle event {'fname': 'g2v_model/doc2vec_model_dim32.model', 'datetime': '2022-12-14T20:51:33.776734', 'gensim': '4.1.1', 'python': '3.7.10 (default, Feb 26 2021, 13:06:18) [MSC v.1916 64 bit (AMD64)]', 'platform': 'Windows-10-10.0.22000-SP0', 'event': 'loaded'}
-2022-12-14 20:51:33,776 - INFO: seed:13
+2022-12-27 10:24:32,140 - INFO: loading Doc2Vec object from g2v_model/doc2vec_model_dim32.model
+2022-12-27 10:24:32,521 - INFO: loading dv recursively from g2v_model/doc2vec_model_dim32.model.dv.* with mmap=None
+2022-12-27 10:24:32,522 - INFO: loading vectors from g2v_model/doc2vec_model_dim32.model.dv.vectors.npy with mmap=None
+2022-12-27 10:24:32,582 - INFO: loading wv recursively from g2v_model/doc2vec_model_dim32.model.wv.* with mmap=None
+2022-12-27 10:24:32,582 - INFO: loading vectors from g2v_model/doc2vec_model_dim32.model.wv.vectors.npy with mmap=None
+2022-12-27 10:24:32,605 - INFO: loading syn1neg from g2v_model/doc2vec_model_dim32.model.syn1neg.npy with mmap=None
+2022-12-27 10:24:32,625 - INFO: setting ignored attribute cum_table to None
+2022-12-27 10:24:36,974 - INFO: Doc2Vec lifecycle event {'fname': 'g2v_model/doc2vec_model_dim32.model', 'datetime': '2022-12-27T10:24:36.974156', 'gensim': '4.1.2', 'python': '3.7.12 | packaged by conda-forge | (default, Oct 26 2021, 06:08:21) \n[GCC 9.4.0]', 'platform': 'Linux-5.4.0-122-generic-x86_64-with-debian-buster-sid', 'event': 'loaded'}
+2022-12-27 10:24:36,975 - INFO: seed:83

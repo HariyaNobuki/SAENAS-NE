@@ -49,7 +49,6 @@ CIFAR_CLASSES = 10
 
 
 def main():
-
   np.random.seed(args.seed)
   random.seed(args.seed)
   if torch.cuda.is_available():
@@ -111,7 +110,7 @@ def main():
     logging.info('valid_acc %f', valid_acc)
 
     scheduler.step()
-  with open(os.path.join(args.save,"net_{}".format(args.net_id)),'r') as fp:
+  with open(os.path.join(args.save,"net_{}.stats".format(args.net_id)),'w') as fp:
     json.dump(valid_acc,fp)
 
 def train(train_queue, model, criterion, optimizer, gpu_id=0):

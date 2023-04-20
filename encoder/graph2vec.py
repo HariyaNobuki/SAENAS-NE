@@ -141,4 +141,4 @@ def graph2vec(args):
                     epochs=args.epochs,
                     alpha=args.learning_rate)
     model.save("g2v_model/doc2vec_model_dim32.model")
-    # save_embedding(args.output_path, model, graphs, args.dimensions)
+    # save_embedding(args.output_path, model, graphs, args.dimensions
